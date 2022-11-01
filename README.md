@@ -1,4 +1,4 @@
-# Workshop: 2022 Autumn School Interdisciplinary Human Past and Quantitative Uralistics
+# R Workshop @ 2022 Autumn School Interdisciplinary Human Past and Quantitative Uralistics
 
 University of Turku 
 
