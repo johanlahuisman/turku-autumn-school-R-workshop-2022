@@ -33,7 +33,7 @@ In addition, it can be good to create an [RStudio Cloud](https://rstudio.cloud/p
 
 ### Instruction videos
 
-In addition to installing R, there are two instruction videos on Moodle we ask you to watch. One of them is an introduction to R Markdown, showing you how to use it to structure your text. The other is an introduction to some of the concepts in programming -- such as variables, data types and structures -- and how these work in R. This is meant to get everyone familiar with the basics that we will use in the workshop itself.
+In addition to installing R, there are two instruction videos on Moodle we ask you to watch. One of them is an introduction to R Markdown, showing you how to use it to structure your text. The other is an introduction to some of the concepts in programming -- such as variables, data types and structures -- and how these work in R. This is meant to get everyone familiar with the basics that we will use in the workshop itself. Each video comes with an accompanying R Markdown file, which you can find in the *Pre-Workshop Files* folder.
 
 ## Schedule
 
