@@ -6,7 +6,7 @@ University of Turku
 
 ### Installing R
 
-To follow the course you will need to install two programmes on your computer, R and R Studio. The precise instructions for doing this on different platforms should be available when you follow the links below. In addition, we have uploaded a video called *Installing R and R Cloud* to Moodle, which will guide you through the process.
+To follow the course you will need to install two programmes on your computer, R and R Studio. The precise instructions for doing this on different platforms should be available when you follow the links below. In addition, we have uploaded a video called *Installing R and R Cloud* to [Moodle](https://moodle.utu.fi/course/view.php?id=26175), which will guide you through the process.
 
 - First, install [R](https://cloud.r-project.org/). R is a statistical computer language, and the install is necessary for your computer to understand things written in this language. 
   
@@ -31,11 +31,11 @@ The tidyverse package is big, so installing it might take some time. While it is
 
 In addition, it can be good to create an [RStudio Cloud](https://rstudio.cloud/plans/free) account. Select the *Cloud Free* option and click the *Sign Up* button to create an account with your name and email address. You'll need to verify you email address after signing up. RStudio Cloud is an online version of RStudio. We won't necessarily be using it because the desktop version is faster and more stable, but if for some reason something goes wrong during the workshop you can use the cloud version as a backup plan to still follow along.
 
-On Moodle you will also find a short video *Introduction to R*, in which we explain in a bit more detail what R is and does.
+On [Moodle](https://moodle.utu.fi/course/view.php?id=26175) you will also find a short video *Introduction to R*, in which we explain in a bit more detail what R is and does.
 
 ### Instruction videos
 
-In addition to installing R, there are two instruction videos on Moodle we ask you to watch. One of them is an introduction to R Markdown, showing you how to use it to structure your text. The other is an introduction to some of the concepts in programming -- such as variables, data types and structures -- and how these work in R. This is meant to get everyone familiar with the basics that we will use in the workshop itself. Each video comes with an accompanying R Markdown file, which you can find in the *Pre-Workshop Files* folder.
+In addition to installing R, there are two instruction videos on [Moodle](https://moodle.utu.fi/course/view.php?id=26175) we ask you to watch. One of them is an introduction to R Markdown, showing you how to use it to structure your text. The other is an introduction to some of the concepts in programming -- such as variables, data types and structures -- and how these work in R. This is meant to get everyone familiar with the basics that we will use in the workshop itself. Each video comes with an accompanying R Markdown file, which you can find in the *Pre-Workshop Files* folder.
 
 ## Schedule
 
