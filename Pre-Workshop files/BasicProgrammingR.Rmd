@@ -1,0 +1,322 @@
+---
+title: "Programming basics in R"
+author: "John Huisman"
+date: "2022-11"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  html_notebook:
+    code_folding: show
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+---
+
+# R code 'chunks'
+
+We write our R code in so called chunks. It's a good rule of thumb to use one code chunk per task. In addition, name the code chunk with something that tells you what task it does -- you put the name in the curly brackets behind `r`. Let's start a chunk called 'addition', which we will use to add two numbers together:
+
+```{r addition}
+# Within R chunks, we use the hash sign the write comments about our code
+# Text preceded by the hash sign is ignored when running your R code
+# Comments like these are good to explain to others (and yourself) what the code is doing
+
+# Let's type 1 + 1 and press Ctrl+Enter (Windows / Command+Enter (Mac) to run this line of code
+1 + 1
+
+# The output is shown just below the chunk
+
+# Let's type 2+2 and press Ctrl+Enter / Command+Enter again 
+2 + 2
+
+# Now we only ran the second line of code (2+2)
+# If you want to run all the code in a chunk, press Ctrl+Shift+Enter / Command+Shift+Enter
+# You can also press the green arrow at the top-right of the chunk
+
+# Note that the whole chunk, i.e. including comments, is printed in the console 
+
+```
+
+# Variables
+
+One of the fundamentals of programming are *variables*. A *variable* is a sort of container that has a name and some value. Variable *assignment* is when we 'assign' (= store) a value to a variable. We can then use the variable's names to retrieve that value later. Assignment can be done with the equal sign or with an arrow `<-`. An arrow is traditional in R, but people using other languages (e.g. Python) will be used to using `=`. Let's try it out:
+
+```{r assigning_variables1}
+# Create a variable called 'a', and assign to it the value 1
+# Make sure to run the code
+a <- 1
+
+```
+
+You will now see the variable `a` in the **Environment** panel of R Studio. Let's 'call' (= retrieve the value of `a`:
+
+```{r calling_variables1}
+# To retrieve the value of 'a', you need to 'call it'
+# Just type its name and run the code
+a
+
+```
+
+Once a variable is in the R environment, we can change its value at any time:
+
+```{r manipulating_variables1}
+# Let's add 1 to our variable 'a'
+a + 1
+
+# If you now call 'a', we get...
+a
+
+# ...still 1, because we did not store this new value!
+# Let's make a new variable 'b' that is a+1
+b <- a + 1
+
+```
+
+The **Environment** panel now shows both `a` and `b` with their respective values. We can add them together to make a new variable `c`:
+
+```{r manipulating_variables2}
+# Adding 'a' and 'b' together should give use 1 + 2 = 3
+c <- a + b
+c
+
+```
+
+##  Different types of variables
+
+The examples above are all *numeric* variables, but these are of course not the only ones:
+
+- numeric (integers; real)
+  - 1, 2, 3.14
+- character (characters; strings)
+  - "a", "4", "word", "I think 'No!' is what he said"
+- logical (true vs. false)
+  - TRUE, T, FALSE, F
+
+```{r variable_types, error = TRUE}
+# If you put numbers in between quotation marks, R will treat the variable as a character
+d <- "4"
+
+# This means that you cannot add it to one of the numerical variables
+a + d 
+
+# Addition using '+' only works for numbers 
+# Trying to add two character variables together will not work
+e <- "aaa"
+f <- "bbb"
+
+```
+
+If you want to combine two character variables, you can use the *function* `paste()`. Functions are bits of code that perform a particular actions. In some cases, you give the function some input, called *arguments*, which go in between the brackets. So, this case we want to do something with variables `e` and `f`, so these go in between the brackets of the `paste` function:
+
+```{r pasting1}
+# Use paste() to combine 'e' and 'f' into a new variable 'g'
+g <- paste(e, f)
+
+```
+
+One of the most useful functions is `help()`, which can be used to get information about how other R functions work. This information will be shown at the bottom-right panel of R Studio. Let's see what it has to say about the `paste()` function:
+
+```{r pasting2}
+help("paste")
+
+# The paste() function puts a space in between the two strings
+# It seems we can define our own character for this using the 'sep' argument
+# Make a new variable 'h' that combines 'e' and 'f' with an underscore in between them
+h <- paste(e, f, sep = "_")
+
+# The paste() function also works with numeric variables
+# The result will be converted into a character variable
+i <- paste(a, b)
+
+```
+
+# Functions
+
+R has a lot of built-in functions that can do all kinds of mathematical operations, for example:
+
+- `sum()`: add all value together
+- `max()`: find the highest value
+- `min()`: find the lowest value
+- `sqrt()`: calculate the square root a value
+
+```{r numeric_functions, error = TRUE}
+# Summing numbers together
+sum(1, 2, 3)
+
+# Summing variabes together
+sum(a, b, c)
+sum(a, b, c, d)
+
+# Find the highest number among a set of variables
+max(a, b, c)
+
+```
+
+In addition, R has function to switch between different types of variables, such as:
+
+- `as.numeric()`: turn a variable into a numeric one
+- `as.character()`: turn a variable into a character one
+- `as.logical()`: turn a variable into a logical one
+
+```{r switching_vartypes}
+# Change the variable 'd' into a number
+j <- as.numeric(d)
+
+# Find the highest number among variables 'a', 'b', 'c' and 'd'
+max(a, b, c, as.numeric(d))
+
+# Character variables that are not number cannot be made into a numeric variable
+as.numeric(e)
+
+# Pasting logical variables will return their values as character strings
+k <- TRUE
+l <- FALSE
+paste(k, l)
+
+# They can be converted into a number, where TRUE = 1, and FALSE = 0
+as.numeric(k)
+as.numeric(l)
+
+# In reverse, a zero will be turned into a FALSE
+# And other number will be turned into TRUE 
+as.logical(0)
+as.logical(a)
+as.logical(b)
+
+```
+
+# Variable names
+
+Up until now we've been using `a`, `b`, `c` etc. to name our variables. This was only to give you an idea of how things work; it is not good practice actually. Try to give your variables *meaningful names*. This makes your code easier to follow, both for yourself and others, which also makes it more *reproducible*.
+
+There are some rules to what can be used as a variable name:
+
+1.  The names has to start with a character a-z, A-Z (case sensitive!)
+2.  It can furthermore contain any number of further alphabetic letters, numerals, or "\_" or "."
+
+Some examples of legal variable names:
+
+- `a`
+- `a1`
+- `a_1`
+- `a.1`
+- `aa`
+- `my_var_1`
+- `my.var.1`
+- `myVar1`
+
+Some R users advise against using `.` in variable names because it looks strange to programmers used to different programming languages because `.` often has a special meaning there -- however, it will work just fine in R. 
+
+Also try to avoid using names that are also the names of functions, like `paste` or `help` which we saw before. It is of course hard to know beforehand, but you'll learn common function names as we go along. I used `c` to define something before, but `c()` is actually a built-in function of R. Best to avoid that as in such cases the output of our code can become... let's say unpredictable at best.
+
+# Data structures
+
+In the code and exercises above we worked with variables that had a single number, character or logical value assigned to them. We can of course have variables that contain much richer data. These can be created with the following functions:
+
+- `c()`: a vector, a set of items of the same type
+- `matrix()`: a matrix, a two-dimensional set of items of the same type
+  - Matrices are arranged into rows and columns using the arguments `nrow = n` and `ncol = n` 
+  - The product of these two numbers should equal the total number of items in the matrix
+- `array()`: an array, a multi-dimensional set of items of the same type
+  - Arrays are arranged into rows, columns, and layers using the argument `dim = c(nrow, ncol, nlay)`
+  - The product of these three numbers should equal the total number of items in the array
+- `factor()`: a factor, a set of categorised items
+  - The unique values in a factor are called *levels*
+- `data.frame()`: a data frame, a two-dimension set of items of different types
+  - The columns of data frame have names
+- `list()`: a list, a multi-dimensional set of items of any type 
+
+The data frame is the one that we will be using the most throughout the rest of this workshop, but in order to understand it we need to understand some of the other types as well. Let's start with vectors:
+
+```{r vectors1}
+# Vectors are assigned with c()
+num_vec <- c(1,2,3)
+char_vec <- c("a", "b", "c")
+log_vec <- c(TRUE, FALSE, FALSE)
+
+```
+
+The position of an element in a vector is called its *index*. We can call a vector element by putting its index in square brackets behind the vector name. It is important to note here that R starts counting indices from number 1, whereas many other languages start from 0, so keep this in mind. For example, `char_vec[2]` gives us `b`, because the second element of that vector is the letter *b*:
+
+```{r vectors2}
+# Calling vector elements by their index
+num_vec[3]
+char_vec[2]
+log_vec[1]
+
+```
+
+Because matrices have two dimensions, each element has an index consisting of two parts. These are separated by a comma when calling the element; `matrix[row,col]`:
+
+```{r matrices1}
+# One way to create a matrix is to give it a vector and define 
+# how many rows and columns you need
+# The 'byrow = TRUE' argument means that will assign the values row-wise 
+num_mat <- matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), nrow = 3, ncol = 4, byrow = TRUE)
+
+# Let's see what that looks like
+num_mat
+
+# R actually shows you how to call an element
+# The rows have [x,] in front of them
+# The columns have [,y] above them
+# The number 7 is in the second row, third column
+num_mat[2,3]
+
+# If you only give one number in front of the comma you get the entire row
+num_mat[1,]
+
+# If you only give one number behind the comma you get the entire column
+num_mat[,1]
+
+```
+
+# Reading data files
+
+More often than not you will of course use existing data files rather than creating them on the spot in R.
+
+## Some notes on file types
+
+- PDF: very good for presenting your work, but useless for working with data because it is impossible to read into R and other programming languages
+- Excel sheet: can be good for entering your data, but it can be difficult for R and other programming languages can have difficulties reading it. In addition, Excel sheet are meant for the Excel software, which requires a licences, and it might not even exist in the future
+- csv: not easy on the eye for humans, but very easy to read for R and other languages, and there is no special software required
+- tsv: like csv, but with the added value that you data itself can include commas, so you won't run into problems with different delimiters
+
+```{r read_data}
+# We need to set the working directory to let R know where to look for files
+setwd("C:/rwd")
+
+# Reading a CSV file
+data <- read.csv("test_data.csv")
+
+# Each column has a name
+# We use the '$' (dollar sign) to call a single column
+data$var1
+
+# The called column acts like a vector
+# We can use indices to call a specific element
+data$var1[2]
+
+# Reading a TSV/TXT file
+data2 <- read.delim("test_data.txt")
+
+```
+
+Once we have multiple data frames, we can combine into a single one:
+
+```{r combine_data}
+# Combining them by rows
+data3 <- rbind(data,data2)
+
+# If we call column 'var1' again we see that there are six observations now
+data3$var1
+
+# Combining them by columns
+data4 <- cbind(data,data2)
+
+# If we call column 'var1' now we will only get one of them
+# So make sure you give each column a unique name
+data4$var1
+
+```

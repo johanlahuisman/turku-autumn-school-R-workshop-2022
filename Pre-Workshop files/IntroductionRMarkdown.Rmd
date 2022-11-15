@@ -1,0 +1,127 @@
+---
+title: "Introduction to R Markdown"
+author: "John Huisman"
+date: "2022-11"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  html_notebook:
+    code_folding: show
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+# R Markdown
+
+As said before, Markdown is a way to control the structure and formatting of your text. It is called R Markdown because it integrates this formatting language with the R languages. This document will hopefully show you that it is both easy to write and easy to read R Markdown, so let's start with some basics:
+
+Regular text is just typed like his.
+
+Every paragraph should have a full empty line in between.
+
+If you want to start a new line within a paragraph, type two (or more) spaces at the end  
+and then start typing again on the line below  
+to avoid having empty lines in between.
+
+Putting words in between asterisks gives you *italicised* text.
+
+Putting words in between double asterisks give you **bold** text.
+
+Putting words in between triple asterisks gives you ***bold italicised*** text.
+
+Putting words in between backticks gives you `code` text. This is useful if you want to reference R packages or function, e.g. we will be using the `install.packages()` function to get the `tidyverse` package later today.
+
+# Sections
+
+In Markdown we use `#` (the hash sign) to start new sections. Here we used a single hash sign to create a main section. 
+
+Use multiple hash signs to create subsections:
+
+## Subsection
+
+Here we used two hash signs to create a subsection that is nested into the main section.
+
+### Sub-subsection
+
+Here we used three hash signs to create a subsection that is nested into the subsection.
+
+If you have `number_sections: yes` beneath your `html_notebook` in the header (see all the way at the top of the document), the sections will be automatically numbered accordingly.
+
+# Lists
+
+You can create ordered (numbered) lists, as well as unordered lists.
+
+For ordered lists, you write a number or letter with a period behind it, followed by a tab. The period+tab combination lets Markdown know that you want a list:
+
+1.    The first point in the list
+2.    The second point in the list
+3.    The third point in the list
+
+For unordered lists, you use a dash followed by a space. If you want sublevels, use a tab to indent:
+
+- The first point of this list
+  - The first subpoint of this list
+    - The first sub-subpoint of this list
+- The second point of this list
+- The third point of this list
+
+# Output
+
+You can export your R Markdown file into a number of different document types. You specify which one you want in the header at the start of the document. The output we are using here is a `html_notebook`. This format is convenient when you are still working on something, because it lets you quickly generate the document without needing to rerun every code chunk from the top.
+
+When you press 'Preview' on a html notebook, it only shows the output for code that was run in that R session, from the last time it was run. So if you ever press 'preview' and are wondering why you don't see any output for some code, it's probably because you haven't run it in your R session yet.
+
+Other popular outputs are `html_document`, `word_document`, and `pdf_document`. These formats are good for when you have something finished that you want to publish. Press the 'Knit to HTML', 'Knit to Word' etc. to change your output. For PDF output, you need to have LaTex installed. If you use Windows, [MikTex](https://miktex.org/download) will install a basic LaTex system. If you use Mac, you can install [MacTex](https://tug.org/mactex/).
+
+# Code 'chunks'
+
+Chunks are what we call the bits or R code in our R Markdown file. So, these chunks is where we actually do all kinds of cool stuff with R, while Markdown is used to type and format the accompanying text around them.
+
+As a shortcut you can press Ctrl+Alt+I (Windows) / Command+Option+I (Mac) to insert a chunk of R code:
+
+```{r}
+
+```
+
+As you can see, a code chunk comes with its own syntax:
+
+- Three back ticks to start the chunk
+- `r` in between curly brackets to let Markdown know this is R code
+- Some space to put your code
+- Three more back ticks to end the chunk
+
+If you change these things, Markdown might not know what to do with the code you wrote, so be careful!
+
+It's a good rule of thumb to use one code chunk per task. In addition, name the code chunk with something that tells you what task it does -- you put the name in the curly brackets behind `r`. Let's start another chunk called 'addition', which we will use to add two numbers together:
+
+```{r addition, warning = FALSE}
+# Within R chunks, we use the hash sign the write comments about our code
+# Text preceded by the hash sign is ignored when running your R code
+# Comments like these are good to explain to others (and yourself) what the code is doing
+
+# Let's type 1 + 1 and press Ctrl+Enter (Windows / Command+Enter (Mac) to run this line of code
+1 + 1
+
+# The output is shown just below the chunk
+
+# Let's type 2+2 and press Ctrl+Enter / Command+Enter again 
+2 + 2
+
+# Now we only ran the second line of code (2+2)
+# If you want to run all the code in a chunk, press Ctrl+Shift+Enter / Command+Shift+Enter
+# You can also press the green arrow at the top-right of the chunk
+
+# Note that the whole chunk, i.e. including comments, is printed in the console 
+
+```
+
+Now that you have seen how a chunk works, let's make one more to do multiplication:
+
+```{r multiplication}
+12*12
+
+```
