@@ -4,6 +4,8 @@ University of Turku
 
 ## Preparation before the workshop
 
+### Installing R
+
 To follow the course you will need to install two programmes on your computer, R and R Studio. The precise instructions for doing this on different platforms should be available when you follow the links below:
 
 - First, install [R](https://cloud.r-project.org/). R is a statistical computer language, and the install is necessary for your computer to understand things written in this language. 
@@ -28,6 +30,10 @@ Once you're installed R and RStudio you need to install the *tidyverse* package.
 The tidyverse package is big, so installing it might take some time. While it is installing you will see lots of text scrolling past in the console window of RStudio. Once the tidyverse package is installed you only have to load it, which is much quicker. To test that it has been installed properly, type `libary(tidyverse)` into the console window. If it works you will see messages about **Attaching packages** and **Conflicts**. If you see a scary red massage starting *Error: package or namespace load failed for ‘tidyverse’* then the installation has failed. This usually happens because R was already installed on your computer a long time ago, and the version is too old to support the current version of tidyverse. You will probably need to start again at the top with reinstalling all the software.
 
 In addition, it can be good to create an [RStudio Cloud](https://rstudio.cloud/plans/free) account. Select the *Cloud Free* option and click the *Sign Up* button to create an account with your name and email address. You'll need to verify you email address after signing up. RStudio Cloud is an online version of RStudio. We won't necessarily be using it because the desktop version is faster and more stable, but if for some reason something goes wrong during the workshop you can use the cloud version as a backup plan to still follow along.
+
+### Instruction videos
+
+In addition to installing R, there are two instruction videos on Moodle we ask you to watch. One of them is an introduction to R Markdown, showing you how to use it to structure your text. The other is an introduction to some of the concepts in programming -- such as variables, data types and structures -- and how these work in R. This is meant to get everyone familiar with the basics that we will use in the workshop itself.
 
 ## Schedule
 
