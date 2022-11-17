@@ -41,16 +41,16 @@ In addition to installing R, there are two instruction videos on [Moodle](https:
 
 ### Day 1 (Wed. 23.11.)
 
-14:00 - 15:20 Data wrangling I
+14:00 - 15:20 Data wrangling
 
 15:20 - 15:40 Break
 
-15:40 - 17:00 Data wrangling II
+15:40 - 17:00 Data plotting I
 
 ### Day 2 (Thu. 24.11)
 
-14:00 - 15:20 Data plotting
+14:00 - 15:20 Data clustering
 
 15:20 - 15:40 Break
 
-15:40 - 17:00 Data clustering
+15:40 - 17:00 Data plotting II
