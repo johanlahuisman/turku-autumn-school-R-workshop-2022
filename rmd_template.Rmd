@@ -1,0 +1,17 @@
+---
+title: "[Introduction to R]"
+author: "[Your name here]"
+date: "[Your date here]"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    df_print: paged
+  html_notebook:
+    code_folding: show
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+---
+
+# First header
