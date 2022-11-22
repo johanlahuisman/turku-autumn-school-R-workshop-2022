@@ -1,0 +1,5 @@
+lect	subfam
+Finnish	Finnic
+Hungarian	Ugric
+North Saami	Saami
+Udmurt	Permic
