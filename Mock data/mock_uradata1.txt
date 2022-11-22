@@ -1,0 +1,5 @@
+language	trait1	trait2	trait3
+Estonian	0	0	0
+Finnish	0	1	0
+Hungarian	1	0	0
+North Saami	0	1	1
