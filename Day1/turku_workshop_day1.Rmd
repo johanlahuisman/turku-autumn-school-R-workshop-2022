@@ -1,0 +1,511 @@
+---
+title: "Introduction to R"
+author: "John Huisman"
+date: "Day 1 | 2022-11-23"
+output:
+  html_notebook:
+    code_folding: show
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes 
+    df_print: paged
+---
+
+# Loading packages 
+
+First we will create a new code chunk in which we will make sure to load all the packages we will be using in this R Markdown file. It's handy to have them all in one chunk in the beginning so you know everything will be ready to go later on without having to search through your file to find out which chunk loads each package. To load a package, use the `library()` function -- make sure that the package you want to use is installed already. We will need the `tidyverse` package for the data wrangling later, so let's load that. We'll also plot some data on maps so let's get the `rnaturalearth` package too.
+
+```{r setup}
+library(tidyverse)
+library(rnaturalearth)
+
+```
+
+# Pre-Workshop video recap
+
+Let's just go over some of the things explained in the pre-workshop video to refresh our memory:
+
+```{r recap}
+# Variables are assigned with an arrow
+lang <- "Finnish"
+num <- 10
+bool <- TRUE
+
+# Each variable has a "data type"
+is.numeric(lang)
+is.logical(num)
+is.character(bool)
+
+is.character(lang)
+is.numeric(num)
+is.logical(bool)
+
+# Data structures
+# Vectors
+langs <- c("Finnish", "Estonian", "Livonian")
+nums <- c(10, 1, 0.1)
+
+# Vector index
+langs[2]
+
+# Matrix
+mat <- matrix(1:9, nrow = 3, ncol = 3, byrow = TRUE)
+
+# Matrix index
+mat[1,2]
+
+# Data frame
+uradata1 <- read.delim("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_uradata1.txt")
+
+# Data frame index
+uradata1$trait1
+uradata1$trait1[1]
+
+```
+
+# Wide data vs. Long data
+
+Let's talk a bit about how data can be formatted before going into our Uralic data. 
+
+## Wide data
+
+For human readers, **WIDE** data is often easier to read. Take for example data collected through a questionnaire:
+
+|               | Question 1 | Question 2 | Question 3 |
+| -----------   | :--------- | :--------- | :--------- |
+| Participant 1 | A          | B          | C          |
+| Participant 2 | A          | A          | C          |
+| Participant 2 | C          | B          | B          |
+
+In the table, each *row* represents a **participant**, each *column* represent a **question**, and each *cell* represents a **response**.
+
+You can imagine various types of data that can be display this way, e.g. climate data, such as average monthly temperatures in various places in different months:
+
+|           | January | February | March |
+| --------- | :------ | :------- | :---- |
+| Budapest  | 1.4     | 3.4      | 7.7   |
+| Dudinka   | -26.9   | -26.6    | -21.2 |
+| Turku     | -3.8    | -4.5     | -1.3  |
+
+For the workshop, we will of course be working with linguistic data, e.g. the presence/absence of UraTyp traits in different languages:
+
+|                   | UT001 | UT002 | UT003 |
+| ----------------- | :---- | :---- | :---- |
+| Central Veps      | 0     | 1     | 0     |
+| Courland Livonian | 0     | 0     | 0     |
+| East Mansi        | 1     | 0     | 1     |
+
+The **WIDE** data makes it easier to compare the responses/temperatures/linguistic features across the different participants/places/languages. This is nice and readable for us, so why would we transform our data into some other format? Let's first have a look at what the temperature data would look like in **LONG** format: 
+
+## Long data
+
+In the **LONG** format, the climate data would look like this:
+
+| Place     | Month    | Temperature |
+| :-------- | :------- | :---------- |
+| Budapest  | January  | 1.4         |
+| Budapest  | February | 3.4         |
+| Budapest  | March    | 7.7         |
+| Dudinka   | January  | -26.9       |
+| Dudinka   | February | -26.6       |
+| Dudinka   | March    | -21.2       |
+| Turku     | January  | -3.8        |
+| Turku     | February | -4.5        |
+| Turku     | March    | -1.3        |
+
+Every *row* in this format represent one **data point**, i.e. **observation**. Every *column* represents one **variable** on which something was measured. In other words, the columns tell us three different things about each observation: the **place** where the observation was made, the **month** in which it was made, and the **temperature** recorded. Why is this useful? 
+
+Imagine plotting the temperature graphs for our three places: 
+
+![](./temperature_plot.png)
+
+Let's look at the point marked on the graph. It tells us that in the **place** *Dudinka* for the **month** *July*, the mean recorded **temperature** was *13.8*. Our one point is thus one **observation**, with three attributes: *place*, **month**, and **temperature**. That information is the same as what we find in each column in the **LONG** format! Getting your data into this format makes it very easy to work with in R, especially for plotting.
+
+Note that this does not mean there is no use for the **WIDE** format! Different tasks can require data formats. It's just that **LONG** format works best with the way the plotting package `ggplot2` and several analyses are set up.
+
+Let's have a look at getting some data into R and switching between the **WIDE** and **LONG** format:
+
+```{r read data}
+# Straight from Github
+uradata1 <- read.delim("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_uradata1.txt")
+uradata2 <- read.csv("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_uradata2.csv")
+
+# Downloaded
+uradata1 <- read.delim("mock_uradata1.txt")
+uradata2 <- read.csv("mock_uradata2.csv")
+
+```
+
+This data is in the **WIDE** format, so let's transform it into the **LONG** format using the function `pivot_longer()`, which has four important arguments:
+
+- **data**: the data that is used in the function
+- **cols**: which columns should be turned into a long format
+- **names_to**: a new column that will contain column names of the *wide* data, here: the months
+- **values_to**: a new column that will contain the cell values values of the *wide* data, here: the amount of rain
+
+There are two ways of using functions: the "traditional" way, and the "pipe" way, which is heavily used in the tidyverse:
+
+```{r pivot to LONG}
+# The "traditional" way
+# function(data, arguments)
+pivot_longer(uradata1, cols = c("trait1", "trait2", "trait3"), names_to = "ut_trait", values_to = "value")
+
+# The "pipe" way
+# data %>% function(arguments)
+uradata1 %>% 
+  pivot_longer(cols = c("trait1", "trait2", "trait3"), names_to = "ut_trait", values_to = "value")
+
+# Shorter
+uradata1 %>% 
+  pivot_longer(c("trait1", "trait2", "trait3"), names_to = "ut_trait", values_to = "value")
+
+# Shorter again using negative selecting
+# Here we use the exclamation mark to *NOT* select a column
+uradata1 %>% 
+  pivot_longer(!language, names_to = "ut_trait", values_to = "value")
+
+# Saving it as a new data frame
+uradata1 %>% 
+  pivot_longer(!language, names_to = "ut_trait", values_to = "value") -> uradata1_long
+
+# The second file too
+uradata2 %>% 
+  pivot_longer(!language, names_to = "ut_trait", values_to = "value") -> uradata2_long
+
+```
+
+Now that we have two data frames in the **LONG** format, we can combine them into a single data frame using `rbind()` or `bind_rows()`:
+
+```{r binding data}
+# The "traditional" way
+all_uradata <- rbind(uradata1_long, uradata2_long)
+
+# The "tidy" way
+uradata1_long %>% 
+  bind_rows(uradata2_long) -> all_uradata
+
+```
+
+Of course, sometimes it can be useful to have the wide data format (for example, for displaying the data in a table), so we also need to know how to go from long to wide. This is done with the function `pivot_wider()`, which has three important arguments:
+
+- **data**: the data that is used in the function
+- **names_from**: the column that contains the values that will become the column names in the *wide* data, here: the months
+- **values_from**: the column that contains values with which the cells of the *wide* data will be filled, here: the amount of rain
+
+```{r pivot to WIDE}
+# The "tidy" way
+all_uradata %>%
+  pivot_wider(names_from = ut_trait, values_from = value) -> all_uradata_wide
+
+# The "traditional" way
+all_uradata_wide <- pivot_wider(all_uradata, names_from = ut_trait, values_from = value)
+
+```
+
+In the examples above we worked with data frames that have the same structure -- i.e. they show the same variables: *language*, *trait*, and *value*. This could be the case if you are combining the same information from several sources. Suppose you want to add a different type of information, e.g. the subfamily of each language: 
+
+```{r joining data - preparation}
+# Read in the data from Github
+subfamilies <- read.delim("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/subfamilydata.txt")
+
+# Rename the columns to match
+# Note the order 
+subfamilies %>%
+  rename(language = lect,
+         subfamily = subfam) -> subfamilies
+
+```
+
+In order to be able to join different data frames together, they need to match in their names -- otherwise how would R know which things to combine?
+
+```{r joining data - operation}
+# There are different ways of joining data frames together
+# It all depends on the column your matching observations on
+# This is done with the argument `by = ...`
+# Let's start with the "traditional" notation
+
+# Keep all observations, fill in the blanks with missing values
+full_join(all_uradata_wide, subfamilies, by = "language")
+
+# Add to the left data frame
+left_join(all_uradata_wide, subfamilies, by = "language")
+
+# Add to the right data frame
+right_join(all_uradata_wide, subfamilies, by = "language")
+
+# Only keep observations present in both 
+inner_join(all_uradata_wide, subfamilies, by = "language")
+
+# Do it the "tidy" way
+all_uradat_wide %>%
+  inner_join(subfamilies, by = "language") -> all_data_subfam
+
+# Join the data frames `uradata1`, `uradata2`, and `subfamilies`
+# Then transform to the LONG format
+# Use the tidy way
+uradata1 %>% 
+  left_join(uradata2, by = "language") %>%
+  left_join(subfamilies, by = "language") %>%
+  pivot_longer(!c(language, subfamily), names_to = "ut_trait", values_to = "value") -> all_uradata_subfam
+
+```
+
+Now that we have a bigger data frame, we can do some more things with it. Let's first add some more information to it, e.g. Estonian is missing subfamily data. This means we want to do something **IF** the language is Estonian. This is called a conditional statement
+
+The simplest format of the conditional statement in R is `if(test expression){statement}`. In this setup, you define a *test expression* that R will evaluate, and if the statement is `TRUE` then the code in the *statement* gets executed. If the statement is `FALSE` however, nothing happens.
+
+Alternatively, you might want R to actually run some code even if the statement is `FALSE`. In that case you add an `else{}` statement which contains the code to run: `if(test expression){statement1} else{statement2}`.
+
+The pipeable tidy version function of this is `if_else()`, and has the syntax `if_else(test_expression, statement_if_true, statement_if_false)`
+
+```{r conditional statements}
+# Conditional statement
+lang <- "Estonian"
+
+if(lang == "Estonian"){
+  print("True")
+}
+
+if(lang == "Estonian"){
+  print("Tre")
+} else{
+  print("False")
+}
+
+if_else(lang == "Estonian", "True", "False")
+
+```
+
+Now we can actually add to our data, which is done using the function `mutate()`. This function can both add to (or change) existing columns, and create entirely new columns. Let's add to an existing one first.
+
+```{r mutate}
+# Use mutate in combination with the if_else function
+# We mutate the column "subfamily", i.e. we add to an existing one
+# If the language is not Estonian, we just want to keep the value that's already there
+all_uradata_subfam %>%
+  mutate(subfamily = if_else(language == "Estonian", "Finnic", subfamily)) -> all_uradata_subfam
+
+```
+
+Once we have several variables together, we can also filter our data
+
+```{r filter data}
+# Filtering
+all_uradata_wide2 %>%
+  filter(subfam == "Finnic")
+
+all_uradata_wide2 %>%
+  filter(subfam != "Finnic")
+
+all_uradata_wide2 %>%
+  filter(ut_trait == "trait1" | ut_trait == "trait2")
+
+all_uradata_wide2 %>%
+  filter(subfam == "Finnic" & ut_trait == "trait1")
+
+# Selecting using %in%
+# If you have many columns (e.g. in WIDE data) you may want to select a few
+# This can be done by creating a vector of the columns you're interested in
+# And then use the select() function to get those columns
+interesting <- c("trait1", "trait4", "trait6")
+
+all_uradata_subfam %>%
+  filter(ut_trait %in% interesting)
+
+```
+
+Filtering is selecting by row, but we can also select specific columns:
+
+```{r select columns}
+# Selecting columns
+all_uradata_subfam %>%
+  select(language, ut_trait, value)
+
+# Selecting with renaming
+all_uradata_subfam %>%
+  select(lect = language, ut_trait, value)
+
+# Selecting from a vector
+# Remember we had the "interesting" traits vectors
+all_uradata_wide %>%
+  select(language, all_of(interesting))
+
+# If you are not sure all the traits exist in your data frame use any_of()
+interesting <- c("trait1", "trait4", "trait7")
+all_uradata_wide %>%
+  select(language, any_of(interesting))
+
+
+```
+
+Adding new columns
+
+```{r adding new columns}
+# Read the climate data
+climate_data <- read.csv("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_climatedata.csv")
+
+# Let's add a column "season" to the data
+# So e.g. if month == 
+
+climate_data %>%
+  mutate(season = case_when(
+    month == 3 | month == 4 | month == 5 ~ "Spring",
+    month == 6 | month == 7 | month == 8 ~ "Summer",
+    month == 9 | month == 10 | month == 11 ~ "Autumn",
+    month == 12 | month == 1 | month == 2 ~ "Winter")) -> climate_data_seasons
+
+# Now we can calculate average temperature per season
+climate_data_seasons %>%
+  group_by(place, season) %>%
+  mutate(mean_temp = mean(temperature))
+
+# Now we have everything in there multiple times
+# In cases like this where we group by something we summarise 
+climate_data_seasons %>%
+  group_by(place, season) %>%
+  summarise(mean_temp = mean(temperature))
+
+# The `n()` function counts the number of lines in its group 
+# (or in the entire table if it isn't grouped)
+climate_data_seasons %>%
+  group_by(season) %>%
+  summarise(n_month=n())
+
+# What happened here?
+
+```
+
+# UraTyp data
+
+Let's clear all the mock data and variables we have been working with up until now and start fresh to work with the UraTyp data
+
+```{r uratyp data}
+# Uratyp data
+uratype_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/raw/UT/Finaldata.csv")
+
+# Take a look at these, think about questions you might ask. You might go back to your favourite typological feature. Here's an example involving the interaction of two features:
+# *Is contrastive consonant length (UT116) related to contrastive vowel length (UT117)?*
+uratype_data %>% 
+  select(language, subfam, UT116, UT117) %>%
+  mutate(Value = case_when(
+    UT116 == 0 & UT117 == 0 ~ "Neither",
+    UT116 == 0 & UT117 == 1 ~ "V only",
+    UT116 == 1 & UT117 == 0 ~ "C only",
+    UT116 == 1 & UT117 == 1 ~ "Both"
+    )) %>%
+  select(-UT116, -UT117) -> length_contrast_data
+
+```
+
+```{r plotting uratyp data on a map}
+# Get the language information from Github
+language_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/raw/Languages.csv")
+
+# There's a few columns we might not need so let's clean it up
+language_data %>% 
+  select(Name, Latitude, Longitude) -> language_data_clean
+
+# Join the length contrast data with the language information
+length_contrast_data %>% 
+  rename(Name = language) %>% 
+  left_join(language_data_clean, by = "Name") -> length_map_data
+
+# Check that our latitude and longitude are actually numbers
+str(length_map_data)
+
+# Plotting goes through ggplot()
+ggplot(data = length_map_data, aes(x = Longitude, y = Latitude))
+
+# Nothing happened! We need to tell it what type of data to plot
+ggplot(length_map_data, aes(x = Longitude, y = Latitude)) +
+  geom_point()
+
+# The points themselves don't tell us that much, let's add the value as text
+ggplot(length_map_data, aes(x = Longitude, y = Latitude, label = Value)) +
+  geom_text()
+
+# Alternatively we can put a little box around the text, this is called a label
+ggplot(length_map_data, aes(x = Longitude, y = Latitude, label = Value)) +
+  geom_label()
+
+```
+
+This is all good, but it's not very informative without the map.
+
+```{r plotting on a map}
+# Let's plot those a map
+# We loaded the rnaturalearth package before
+# It holds several type of map data
+# Ignore the sf class statement here for now, we'll come back to that later
+# Basically sf is a tidy version of map data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Plot the world map
+ggplot(data = world) + 
+  geom_sf() 
+
+# Plot the points and labels on the world map
+# Here we are working with different data frames for each part
+# This changes things a bit for our syntax
+# Each geometry object now needs its own data defined
+ggplot() + 
+  geom_sf(data = world) +
+  geom_label(data = length_map_data, aes(x = Longitude, y = Latitude, label = Value))
+
+# This a bit zoomed out.. let's fix that
+ggplot() + 
+  geom_sf(data = world) +
+  coord_sf(xlim = range(length_map_data$Longitude), 
+           ylim = range(length_map_data$Latitude)) +
+  geom_label(data = length_map_data, aes(x = Longitude, y = Latitude, label = Value))
+
+```
+
+# Bonus: Copy from Excel
+
+```{r copy from Excel}
+# You can directly copy paste your data from Excel
+# Windows
+lexdata_copied <- read.table(file = "clipboard", sep = "\t", header = FALSE)
+
+# Mac version
+#lexdata_copied <- read.table(pipe("pbpaste"), sep = "\t", header = TRUE)
+
+```
+
+```{r mds}
+uratyp_data %>%
+  select(Language_Name, Parameter_ID, Value) %>%
+  mutate(Value = as.numeric(Value)) %>%
+  pivot_wider(names_from = Parameter_ID, values_from = Value) %>%
+  column_to_rownames("Language_Name") -> uratyp_wide
+
+uratyp_data %>%
+  select(Language_Name, Parameter_ID, Value) %>%
+  pivot_wider(names_from = Parameter_ID, values_from = Value) %>%
+  column_to_rownames("Language_Name") %>%
+  dist(method = "binary") -> uratyp_dist
+
+cl <- hclust(uratyp_dist, method = "average")
+plot(cl)
+
+mds <- cmdscale(uratyp_dist, k = 2, eig = TRUE)
+plot(mds$points[,1], mds$points[,2], type = "n")
+text(mds$points[,1], mds$points[,2], label = rownames(uratyp_wide))
+
+mds_points <- as.data.frame(mds$points)
+mds_points %>%
+  rownames_to_column() %>%
+  rename(Language_Name = rowname,
+         Dim1 = V1,
+         Dim2 = V2) %>%
+  left_join(languages_clean) -> mds_tidy
+
+ggplot(mds_tidy, aes(x = Dim1, y = Dim2, label = Language_Name, colour = Subfamily)) +
+  geom_text() +
+  theme_classic()
+
+```
+

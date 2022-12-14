@@ -1,0 +1,394 @@
+---
+title: "Introduction to R"
+author: "John Huisman"
+date: "Day 2 | 2022-11-24"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  html_notebook:
+    code_folding: show
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup}
+library(tidyverse)
+library(ggrepel)
+library(janitor)
+library(rnaturalearth)
+
+```
+
+# Recap Day 1
+
+```{r recap}
+uradata1 <- read.delim("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_uradata1.txt")
+
+uradata2 <- read.csv("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/mock_uradata2.csv")
+
+uradata1 %>%
+  full_join(uradata2, by = "language") -> all_uradata
+
+subfamily_data <- read.delim("https://raw.githubusercontent.com/johanlahuisman/turku-autumn-school-R-workshop-2022/main/Mock%20data/subfamilydata.txt")
+
+subfamily_data %>%
+  rename(language = lect) -> subfamily_data
+
+all_uradata %>%
+  full_join(subfamily_data, by = "language") -> all_uradata_subfam
+
+# Move column
+all_uradata_subfam %>%
+  rename(subfamily = subfam) %>%
+  relocate(subfamily, .after = language) %>%
+  filter(language != "Udmurt") -> all_uradata_clean
+
+```
+
+# Conditional statements
+
+Now that we have a bigger data frame, we can do some more things with it. Let's first add some more information to it, e.g. Estonian is missing subfamily data. This means we want to do something **IF** the language is Estonian. This is called a conditional statement
+
+The simplest format of the conditional statement in R is `if(test expression){statement}`. In this setup, you define a *test expression* that R will evaluate, and if the statement is `TRUE` then the code in the *statement* gets executed. If the statement is `FALSE` however, nothing happens.
+
+Alternatively, you might want R to actually run some code even if the statement is `FALSE`. In that case you add an `else{}` statement which contains the code to run: `if(test expression){statement1} else{statement2}`.
+
+The pipeable tidy version function of this is `if_else()`, and has the syntax `if_else(test_expression, statement_if_true, statement_if_false)`
+
+```{r conditional statements}
+language <- "Estonian"
+
+if(language == "Estonian"){
+  print("It's true!")
+}
+
+language <- "Hungarian"
+
+if(language == "Estonian"){
+  print("It's true!")
+}
+
+if(language == "Estonian"){
+  print("It's true!")
+}else{
+  print("It's false!")
+}
+
+# Tidy version
+language <- "Estonian"
+
+if_else(language == "Estonian", "It's true!", "It's false!")
+
+# Quick fix the missing subfamily information for Estonian
+# We use mutate() to change/add columns
+# Let's first see how it works
+# Adding a new column with a completely new value
+all_uradata_clean %>%
+  mutate(family = "Uralic") %>%
+  relocate(family, .after = subfamily)
+
+# Adding a new column by modifying existing values
+all_uradata_clean %>%
+  mutate(trait1_plus1 = trait1 + 1) %>%
+  relocate(trait1_plus1, .after = trait1)
+
+# Using the conditional statement to modify existing values
+all_uradata_clean %>%
+  mutate(subfamily = if_else(language == "Estonian", "Finnic", subfamily))
+
+all_uradata_clean %>%
+  mutate(subfamily = if_else(language == "Estonian", "Finnic", subfamily)) -> all_uradata_fixed
+
+```
+
+# Read the UraTyp data
+
+Let's clear all the mock data and variables we have been working with up until now and start fresh to work with the UraTyp data from Github.
+
+```{r read uratyp data}
+# Get the UraTyp data 
+# Check UT018
+uratyp_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/raw/UT/Finaldata.csv")
+
+# Get information about the languages
+language_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/cldf/languages.csv")
+
+# Let's change a few things in the two data frames
+uratyp_data %>%
+  rename(Language_Name = language,
+         Subfamily = subfam) -> uratyp_data_clean
+
+language_data %>%
+  rename(Language_Name = Name) %>%
+  select(Language_Name, Longitude, Latitude) -> language_data_clean
+
+# Join the two together
+uratyp_data_clean %>%
+  inner_join(language_data_clean, by = "Language_Name") %>%
+  relocate(c(Longitude, Latitude), .after = Subfamily) -> uratyp_data_langinfo
+
+```
+
+# Plotting UraTyp data on a map
+
+```{r plotting languages}
+# Plotting goes through ggplot()
+ggplot(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude))
+
+# Nothing happened! We need to tell it what type of data to plot
+ggplot(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude)) +
+  geom_point()
+
+# The points themselves don't tell us that much, let's add the language names as text
+ggplot(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude, label = Language_Name)) +
+  geom_text()
+
+# Alternatively we can put a little box around the text, this is called a label
+# We can give each subfamily its own fill colour by setting `fill` 
+ggplot(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude, label = Language_Name, fill = Subfamily)) +
+  geom_label()
+
+```
+
+This is not really helpful without the map.
+
+```{r plotting maps}
+# We loaded the rnaturalearth package before
+# It holds several type of map data, e.g. the world's countries
+# Ignore the returnclass statement here for now
+# Basically sf is a tidy version of map data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Plot the world map
+ggplot(data = world) + 
+  geom_sf() 
+
+# coord_sf is used to set a range of coordinates
+# Let's try and zoom in a bit more
+ggplot(data = world) + 
+  geom_sf() +
+  coord_sf(xlim = c(0,60), 
+           ylim = c(45,75)) 
+
+```
+
+# Combining linguistic data and maps
+
+```{r linguistic maps}
+# First we will plot the language names on a map
+# That means we will have two layers: base map + labels
+# This changes things a bit for our syntax
+# Each layer has its own data frame it uses
+# That means we won't give any data to the ggplot() function
+# Instead each geom_xxx() gets its own data
+ggplot() + 
+  geom_sf(data = world) +
+  geom_label(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude, label = Language_Name, fill = Subfamily))
+
+# We need to set the coordinates again
+# Let's fix it to what we have in the language information
+# The xlim will be from min(Longitude) to max(Longitude)
+# The ylim will use Latitude
+ggplot() + 
+  geom_sf(data = world) +
+  coord_sf(xlim = c(min(uratyp_data_langinfo$Longitude),
+                    max(uratyp_data_langinfo$Longitude)
+                    ), 
+           ylim = c(min(uratyp_data_langinfo$Latitude),
+                    max(uratyp_data_langinfo$Latitude)
+                    )
+           ) +
+  geom_label(data = uratyp_data_langinfo, aes(x = Longitude, y = Latitude, label = Language_Name, fill = Subfamily))
+
+# It's not the prettiest map yet, but we will come back to that later
+
+```
+
+# Playing around with UraTyp data
+
+```{r combining uratyp traits}
+# Read through the UraTyp trait descriptions
+# Sometimes it can be interesting to combine traits
+# For example UT contains info on rising and lowering diphthongs
+# Let's combine those into a "diphthongs" trait
+# First we select the relevant columns
+uratyp_data_langinfo %>% 
+  select(Language_Name, Subfamily, Longitude, Latitude, UT131, UT132) -> uratyp_diphthongs
+
+# We want to say something like:
+# No diphthongs, Rising only, Lowering only, Rising + Lowering
+# In principle it is a series of conditional statements
+# If Rising = 0 AND Lowering = 0, then "No diphthongs"
+# If Rising = 0 AND Lowering = 1, then ... etc...
+# We can use case_when to handle multiple conditional statements
+# Take note of the syntax here, we use the tilde
+# Remember that mutate() is used to create new columns
+uratyp_diphthongs %>%
+  mutate(Diphthongs = case_when(
+    UT131 == 0 & UT132 == 0 ~ "None",
+    UT131 == 1 & UT132 == 0 ~ "Rising only",
+    UT131 == 0 & UT132 == 1 ~ "Lowering only",
+    UT131 == 1 & UT132 == 1 ~ "Rising + Lowering"
+    )) -> diphthong_data
+
+# Let's check that it's all worked out as it should
+
+# Seems good, let's plot our new variable on a map
+ggplot() + 
+  geom_sf(data = world) +
+  coord_sf(xlim = range(diphthong_data$Longitude), 
+           ylim = range(diphthong_data$Latitude)
+           ) +
+  geom_label(data = diphthong_data, aes(x = Longitude, y = Latitude, label = Diphthongs, fill = Subfamily), size = 4)
+
+# The labels are a bit long so let's abbreviate
+uratyp_diphthongs %>%
+  mutate(Diphthongs = case_when(
+    UT131 == 0 & UT132 == 0 ~ "N",
+    UT131 == 1 & UT132 == 0 ~ "R",
+    UT131 == 0 & UT132 == 1 ~ "L",
+    UT131 == 1 & UT132 == 1 ~ "R+L"
+    )) -> diphthong_data
+
+ggplot() + 
+  geom_sf(data = world) +
+  coord_sf(xlim = range(diphthong_data$Longitude), 
+           ylim = range(diphthong_data$Latitude)
+           ) +
+  geom_label(data = diphthong_data, aes(x = Longitude, y = Latitude, label = Diphthongs, fill = Subfamily), size = 4)
+
+```
+
+# Dimension reduction
+
+The UraTyp data is very rich data as it contains 165 features. In the previous bits of code, we combined some of the features to get a better idea of how they are distributed across languages, and maybe see if there's a relation between those features and the subfamily, for example. However, with 165 features it becomes very hard to visualise or even imagine how the languages compare to each other for *all* these features.
+
+One way of dealing with this is so-called *dimension reduction*. Imagine measuring something on two different things; you can plot this in a 2D plot, which is easy for us to understand. But if we have 165 features, it's basically like having 165 dimensions, which is way to many!
+
+***Principal component analysis (PCA)*** is a  technique that reduces the dimensionality of large datasets (i.e. containing many different features) using some mathematical transformations that we will not go into here. In any case, it tries to preserve the maximum amount of information in fewer dimensions, which can be possible if some features are related to each other -- but not that this is not always the case. 
+
+Usually people then plot the first two so-called *principal components* to visually identify clusters of closely related data points. The closer the points are in the plot, the more they are alike. For us this means that languages that are plotted closer to each other are more similar to each other in the UraTyp data.
+
+```{r pca, error = TRUE}
+# PCA takes the data in WIDE format
+# All columns are data, languages should be row names
+uratyp_data_clean %>%
+  select(-Subfamily) %>%
+  column_to_rownames("Language_Name") -> uratyp_pca_data
+
+# PCA is not good at handling missing values so we need to get rid of those
+# Columns that are all 0's or all 1's are not informative, so remove those too
+# Remember that our 
+uratyp_pca_data %>%
+  select_if(function(column) !any(is.na(column))) %>%
+  remove_constant() -> uratyp_pca_data_clean
+
+# Now we can run the PCA
+uratyp_pca_data_clean %>%
+  prcomp() -> uratyp_pca
+
+# Oh no, errors!
+# Let's find out what's going on
+# The str() function tells you about the structure of your data
+# This includes what type of variables there are in your data frame
+str(uratyp_pca_data_clean)
+
+# Looks like there's a few columns that are chr vectors
+# PCA does some mathematical magic so we need numeric (int)
+uratyp_pca_data_clean %>%
+  select_if(function(column) !is.character(column)) -> uratyp_pca_data_clean
+  
+# Let's try again
+uratyp_pca_data_clean %>%
+  prcomp() -> uratyp_pca
+
+# Success! Let's see what the numbers tell us
+summary(uratyp_pca)
+
+# This looks complicated, but let's focus on PC1 and PC2
+# It looks like together they account for around 36% of our information
+# Not bad for 2 components trying to fit the shoes of 165!
+
+# Let's have a look at what our PCA results look like in the Environment
+# Not very informative, but the "x" part shows the coordinates
+# Let's grab those to work with
+uratyp_pca_loadings <- as.data.frame(uratyp_pca$x)
+
+# Promising, let's select relevant columns
+uratyp_pca_loadings %>%
+  rownames_to_column("Language_Name") %>%
+  select(Language_Name, PC1, PC2) -> pca_loadings_clean
+
+# Let's get the subfamily information from our language_data
+language_data %>%
+  rename(Language_Name = Name) %>%
+  select(Language_Name, Subfamily) -> subfamily_data
+
+# Join them together
+pca_loadings_clean %>%
+  inner_join(subfamily_data, by = "Language_Name") -> pca_loadings_subfamily
+
+# Now we can plot
+# First let's try dots
+ggplot(pca_loadings_subfamily, aes(x = PC1, y = PC2, colour = Subfamily)) +
+  geom_point(size = 6)
+
+# Next with language names
+ggplot(pca_loadings_subfamily, aes(x = PC1, y = PC2, label = Language_Name, fill = Subfamily)) +
+  geom_label()
+
+# This is not great, they are overlapping
+# The ggrepel package can help solve this
+# It tries to move the labels around and adds lines to show their position
+# Let's also add dots (points) to make the position even clearer
+ggplot(pca_loadings_subfamily, aes(x = PC1, y = PC2, label = Language_Name, fill = Subfamily)) +
+  geom_point() +
+  geom_label_repel()
+
+```
+
+# Bonus: UraTyp trait areas
+
+```{r uratyp trait area, error = TRUE}
+uratyp_data_clean %>%
+  pivot_longer(!c(Language_Name, Subfamily), names_to = "Trait_ID", values_to = "Value")
+
+# Go through the na.strings one by one, start with "?"
+uratyp_data_nafix <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/raw/UT/Finaldata.csv", na.strings = c("?", "N/A", "0?"))
+
+uratyp_data_nafix %>%
+  rename(Language_Name = language, Subfamily = subfam) %>%
+  pivot_longer(!c(Language_Name, Subfamily), names_to = "Trait_ID", values_to = "Value") -> uratyp_data_long
+
+# Get the information about the parameters
+parameter_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/cldf/parameters.csv")
+
+# Let's change a few things here too
+parameter_data %>%
+  rename(Trait_ID = ID) %>%
+  select(Trait_ID, Area) -> parameter_data_clean
+
+# Then join them together
+uratyp_data_long %>%
+  inner_join(parameter_data_clean, by = "Trait_ID") %>%
+  relocate(Area, .after = Trait_ID) -> uratyp_data_complete
+
+# Get GB data
+gb_data <- read.csv("https://raw.githubusercontent.com/cldf-datasets/uratyp/main/raw/GB/Finaldata.csv", na.strings = "?")
+
+gb_data %>%
+  rename(Language_Name = language, Subfamily = subfam) %>%
+  pivot_longer(!c(Language_Name, Subfamily), names_to = "Trait_ID", values_to = "Value") -> gb_data_long
+
+gb_data_long %>%
+  inner_join(parameter_data_clean, by = "Trait_ID") %>%
+  relocate(Area, .after = Trait_ID) -> gp_data_complete
+
+
+# Now you can filter by Area if you want to
+
+
+```
+
